@@ -1,0 +1,59 @@
+org: dillescas
+service: api-podcaster
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  memorySize: 512
+  timeout: 30
+  iam:
+    role: arn:aws:iam::940376243370:role/LabRole
+  environment:
+    PODCASTER_TABLE: ${sls:stage}-t_podcasters
+    PODCASTS_TABLE: ${sls:stage}-t_podcasts
+
+functions:
+  post_podcaster:
+    handler: lambda_post_podcaster.handler
+    events:
+      - http:
+          path: /podcaster/create
+          method: post
+          cors: true
+          integration: lambda
+          
+  get_podcaster_by_email:
+    handler: lambda_get_podcaster_by_email.handler
+    events:
+      - http:
+          path: /podcaster/creator
+          method: post
+          cors: true
+          integration: lambda
+
+  update_podcaster:
+    handler: lambda_update_podcaster.handler
+    events:
+      - http:
+          path: /podcaster/update
+          method: put
+          cors: true
+          integration: lambda
+
+  delete_podcaster:
+    handler: lambda_delete_podcaster.handler
+    events:
+      - http:
+          path: /podcaster/delete
+          method: delete
+          cors: true
+          integration: lambda
+          
+  get_all_podcasters:
+    handler: lambda_get_all_podcasters.handler
+    events:
+      - http:
+          path: /podcaster/
+          method: get
+          cors: true
+          integration: lambda
