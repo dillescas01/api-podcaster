@@ -21,22 +21,13 @@ functions:
           method: post
           cors: true
           integration: lambda
-          
+
   get_podcaster_by_email:
     handler: lambda_get_podcaster_by_email.handler
     events:
       - http:
           path: /podcaster/creator
           method: post
-          cors: true
-          integration: lambda
-
-  update_podcaster:
-    handler: lambda_update_podcaster.handler
-    events:
-      - http:
-          path: /podcaster/update
-          method: put
           cors: true
           integration: lambda
 
@@ -48,7 +39,7 @@ functions:
           method: delete
           cors: true
           integration: lambda
-          
+
   get_all_podcasters:
     handler: lambda_get_all_podcasters.handler
     events:
@@ -57,3 +48,19 @@ functions:
           method: get
           cors: true
           integration: lambda
+
+resources:
+  Resources:
+    PodcastersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PODCASTER_TABLE}
+        AttributeDefinitions:
+          - AttributeName: creator_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: creator_id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true

@@ -1,10 +1,8 @@
-// lambda_post_podcaster.mjs
-
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { PutCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { UpdateCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({});
-const ddbDocClient = DynamoDBDocumentClient.from(client);
+const docClient = DynamoDBDocumentClient.from(client);
 
 export const handler = async (event) => {
   const { creator_id, country, name, password, info, picture } = JSON.parse(event.body);
@@ -12,26 +10,35 @@ export const handler = async (event) => {
 
   const params = {
     TableName: tableName,
-    Item: {
-      creator_id,
-      country,
-      name,
-      password,
-      info,
-      picture,
-    }
+    Key: { creator_id },
+    UpdateExpression: 'SET #country = :country, #name = :name, #password = :password, #info = :info, #picture = :picture',
+    ExpressionAttributeNames: {
+      '#country': 'country',
+      '#name': 'name',  // Usamos un alias para "name"
+      '#password': 'password',
+      '#info': 'info',
+      '#picture': 'picture'
+    },
+    ExpressionAttributeValues: {
+      ':country': country,
+      ':name': name,
+      ':password': password,
+      ':info': info,
+      ':picture': picture,
+    },
+    ReturnValues: 'ALL_NEW'
   };
 
   try {
-    await ddbDocClient.send(new PutCommand(params));
+    const data = await docClient.send(new UpdateCommand(params));
     return {
-      statusCode: 201,
-      body: JSON.stringify({ message: 'Podcaster created successfully!' }),
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Podcaster updated successfully', updatedItem: data.Attributes }),
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to create podcaster', details: error.message }),
+      body: JSON.stringify({ error: 'Failed to update podcaster', details: error.message }),
     };
   }
 };
